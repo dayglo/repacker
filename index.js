@@ -6,6 +6,8 @@ var fs = promisify("fs");
 var path = require('path');
 const util = require('util');
 
+const jp = require('jsonpath');
+
 var spawn = require('child_process').spawn;
 var crypto = require('crypto')
 
@@ -13,6 +15,7 @@ function collect (val, memo) {
     memo.push(val);
     return memo;
 }
+
 
 var pakkafile;
 
@@ -65,9 +68,6 @@ fs.readFile(pakkafile)
 			return packerTemplate
 		})
 		.then((packerTemplate)=>{
-			return JSON.stringify(packerTemplate, null, 4)
-		})
-		.then((packerTemplate)=>{
 
 			stdout(JSON.stringify(vars));
 
@@ -85,26 +85,34 @@ fs.readFile(pakkafile)
 				switches.push(`-only=${vars["only"]}`)
 			}
 
+			_.forIn(vars.jsonpath,(value,jsonpath)=>{
+				jp.value(packerTemplate, jsonpath, value)
+			})
+
+			debugger;
 			switches.push('-');
 			stdout(switches.join(' '));
 
 			var child = spawn('packer' , switches);
-			child.stdin.setEncoding('utf-8');
-			child.stdout.setEncoding('utf-8');
-			child.stderr.setEncoding('utf-8');
+			try{
+				child.stdin.setEncoding('utf-8');
+				child.stdout.setEncoding('utf-8');
+				child.stderr.setEncoding('utf-8');
 
-			child.stdout.on('data', stdout);
-			child.stderr.on('data', stderr);
+				child.stdout.on('data', stdout);
+				child.stderr.on('data', stderr);
 
-			child.on('error', stdout);
+				child.on('error', stdout);
 
-			child.stdin.write(packerTemplate);
+				child.stdin.write(JSON.stringify(packerTemplate, null, 4));
 
-			child.stdin.end(); 
+				child.stdin.end(); 
+			} catch (e) {
+				child.stdin.end(); 
+			}
 
 		})
-		.catch(console.error)
-
+		.catch(console.error);
 	});
 })
 .catch(console.error)
