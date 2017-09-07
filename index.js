@@ -74,11 +74,11 @@ fs.readFile(pakkafile)
 			var switches = ['build'];
 			_.forIn(vars.vars ,(value,key)=>{ 
 				switches.push('-var');
-				switches.push("'" + key + '=' + value +  "'")
+				switches.push( key + '=' + value )
 			})
 
 			_.forEach(vars.varfiles, (value)=>{
-				switches.push(`-var-file='${value}'`);
+				switches.push(`-var-file=${value}`);
 			})
 
 			switches.push('-');
