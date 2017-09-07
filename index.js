@@ -81,6 +81,10 @@ fs.readFile(pakkafile)
 				switches.push(`-var-file=${value}`);
 			})
 
+			if (vars["only"]) {
+				switches.push(`-only=${vars["only"]}`)
+			}
+
 			switches.push('-');
 			stdout(switches.join(' '));
 
