@@ -72,7 +72,7 @@ fs.readFile(pakkafile)
 			stdout(JSON.stringify(vars));
 
 			var switches = ['build'];
-			_.forIn(vars.vars ,(key,value)=>{ 
+			_.forIn(vars.vars ,(value,key)=>{ 
 				switches.push('-var');
 				switches.push("'" + key + '=' + value +  "'")
 			})
