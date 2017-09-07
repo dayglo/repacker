@@ -35,7 +35,7 @@ fs.readFile(pakkafile)
 .then(JSON.parse).catch((e)=>{console.log("could not open the specified Pakkafile: " + e) ; process.exit(1)})
 .then((pakkafile)=>{
 
-	_.forIn(pakkafile.templates ,(vars,template)=>{
+	_.forIn(pakkafile.templates ,(options,template)=>{
 
 		var stdout = (text) => {
 			var prefix = template;
@@ -57,35 +57,37 @@ fs.readFile(pakkafile)
 		.then(JSON.parse).catch((e)=>{console.log("could not open the specified template: " + e) ; process.exit(2)})
 		.then((packerTemplate)=>{
 
-			_.forIn(pakkafile.includes ,(data,section)=>{
-				if (section == "variables") {
-					_.merge(packerTemplate.variables , pakkafile.includes.variables)
-				} else {	
-					packerTemplate[section].push(pakkafile.includes[section])
-				}
-			})
+			if (options["include"]) {
+				_.forIn(pakkafile.includes[options["include"]] ,(data,section)=>{
+					if (section == "variables") {
+						_.merge(packerTemplate.variables , pakkafile.includes[options["include"]].variables)
+					} else {	
+						packerTemplate[section].push(pakkafile.includes[options["include"]][section])
+					}
+				})
+			}
 
 			return packerTemplate
 		})
 		.then((packerTemplate)=>{
 
-			stdout(JSON.stringify(vars));
+			stdout(JSON.stringify(options));
 
 			var switches = ['build'];
-			_.forIn(vars.vars ,(value,key)=>{ 
+			_.forIn(options.vars ,(value,key)=>{ 
 				switches.push('-var');
 				switches.push( key + '=' + value )
 			})
 
-			_.forEach(vars.varfiles, (value)=>{
+			_.forEach(options.varfiles, (value)=>{
 				switches.push(`-var-file=${value}`);
 			})
 
-			if (vars["only"]) {
-				switches.push(`-only=${vars["only"]}`)
+			if (options["only"]) {
+				switches.push(`-only=${options["only"]}`)
 			}
 
-			_.forIn(vars.jsonpath,(value,jsonpath)=>{
+			_.forIn(options.jsonpath,(value,jsonpath)=>{
 				jp.value(packerTemplate, jsonpath, value)
 			})
 
