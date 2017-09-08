@@ -1,0 +1,62 @@
+{
+    "templates": {
+        "{}": {
+            "include": "devmachine",
+            "vars": {
+                "vcenter-inputTemplate": "DXC-WINDOWS10-TEMPLATE",
+                "vcenter-outputTemplate": "DXC-WINDOWS10-DEVMACHINE-TEMPLATE"
+            },
+            "varfiles":["examplevarfile.json"]
+        }
+    },
+    "includes": {
+        "devmachine": {
+            "variables": {
+                "vcenter-host" : "",
+                "vcenter-cluster" : "",
+                "vcenter-datacenter" : "",
+                "vcenter-datastore" : "",
+                "vcenter-username" : "",
+                "vcenter-password" : "",
+                "vcenter-vm_name" : "",
+                "vcenter-disk_mode" : "",
+                "vcenter-vm_folder" : "",
+                "vcenter-vm_network" : "",
+                "vcenter-insecure" : ""
+            },
+            "builders": [{
+                "type": "vsphere",
+                "vcenter_server": "{{ user `vcenter-host` }}",
+                "username": "{{ user `vcenter-username` }}",
+                "password": "{{ user `vcenter-password` }}",
+                "insecure_connection": "{{ user `vcenter-insecure` }}",
+                "datacenter": "{{ user `vcenter-datacenter` }}",
+                "template": "{{ user `vcenter-inputTemplate` }}",
+                "vm_name": "{{ user `vcenter-outputTemplate` }}",
+                "host": "{{ user `vcenter-cluster` }}",
+                "linked_clone": false,
+                "datastore": "{{ user `vcenter-datastore` }}",
+                "ssh_username": "vagrant",
+                "ssh_password": "{{user `guest_password`}}",
+                "shutdown_command": "echo '{{user `guest_password`}}' | sudo -S shutdown -P now",
+                "shutdown_timeout": "5m",
+                "CPUs": 2,
+                "RAM": 4096,
+                "convert_to_template": true
+            }],
+            "provisioners": [
+                {
+                    "type": "ansible",
+                    "playbook_file": "./main.yml",
+                    "extra_arguments": [
+                        "-vvv",
+                        "--connection",
+                        "packer",
+                        "--extra-vars",
+                        "ansible_shell_type=powershell ansible_shell_executable=None"
+                    ]
+                }
+            ]
+        }
+    }
+}

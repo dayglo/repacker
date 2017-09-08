@@ -1,0 +1,43 @@
+{
+    "templates":{
+        "windows_10.json" :{
+            "repo": "https://github.com/dayglo/packer-windows",
+            "varfiles" : [ "vcenter-creds.json" ],
+            "vars": { "vcenter-vm_name" : "DXC-WINDOWS-10" },
+            "only": "vmware-iso",
+            "jsonpath" : {
+                "builders[?(@.type=='vmware-iso')].boot_wait" : "10m",
+                "builders[?(@.type=='vmware-iso')].winrm_timeout": "5h"
+            }
+        }
+    },
+    "includes": {
+        "variables": {   
+            "vcenter-host": "",
+            "vcenter-cluster": "",
+            "vcenter-datacenter": "",
+            "vcenter-datastore": "",
+            "vcenter-username": "",
+            "vcenter-password": "",
+            "vcenter-disk_mode": "",
+            "vcenter-vm_folder": "",
+            "vcenter-vm_network": "",
+            "vcenter-insecure" : ""
+        },
+        "post-processors": [{
+            "type": "vsphere",
+            "only": ["vmware-iso"],
+            "host": "{{ user `vcenter-host` }}",
+            "cluster": "{{ user `vcenter-cluster` }}",
+            "datacenter": "{{ user `vcenter-datacenter` }}",
+            "datastore": "{{ user `vcenter-datastore` }}",
+            "username": "{{ user `vcenter-username` }}",
+            "password": "{{ user `vcenter-password` }}",
+            "vm_name": "{{ user `vcenter-vm_name` }}",
+            "disk_mode": "{{ user `vcenter-disk_mode` }}",
+            "vm_folder": "{{ user `vcenter-vm_folder` }}",
+            "vm_network": "{{ user `vcenter-vm_network` }}",
+            "insecure": "{{ user `vcenter-insecure` }}"
+        }]
+    }
+}

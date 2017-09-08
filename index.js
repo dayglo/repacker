@@ -1,21 +1,22 @@
 #!/usr/bin/env node
-var _ = require('lodash');
-var program = require('commander');
-var promisify = require('promisify-node');
-var fs = promisify("fs");
-var path = require('path');
+const _ = require('lodash');
+const crypto = require('crypto')
+const jp = require('jsonpath');
+const path = require('path');
+const program = require('commander');
+const promisify = require('promisify-node');
+const spawn = require('child_process').spawn;
+const tmp = require('tmp');
+const url = require('url');
 const util = require('util');
 
-const jp = require('jsonpath');
+const fs = promisify("fs");
 
-var spawn = require('child_process').spawn;
-var crypto = require('crypto')
 
-function collect (val, memo) {
-    memo.push(val);
-    return memo;
-}
-
+// function collect (val, memo) {
+//     memo.push(val);
+//     return memo;
+// }
 
 var pakkafile;
 
@@ -30,6 +31,48 @@ program
 if (!pakkafile) {
 	pakkafile = "./Pakkafile"
 }
+
+var pullRepo = (repoPath,localPath) =>{
+	return new Promise((resolve,reject)=>{
+
+		var pullRepoProcess = spawn('git' , ['clone' , '--depth=1' , repoPath , '.'] , {cwd:localPath});
+
+		pullRepoProcess.stdout.setEncoding('utf-8');
+		pullRepoProcess.stderr.setEncoding('utf-8');
+
+		pullRepoProcess.stdout.on('data', stdout);
+		pullRepoProcess.stderr.on('data', stderr);
+
+		pullRepoProcess.on('error', stdout);
+
+		pullRepoProcess.on('close', (code) => {
+			console.log(`repo pull exited with code ${code}`);
+			if (code == 0 ){
+				resolve(code)
+			} else {
+				reject(code)
+			}
+		});
+	})
+} 
+
+function copyFile(source, target) {
+    return new Promise(function(resolve, reject) {
+        var rd = fs.createReadStream(source);
+        rd.on('error', rejectCleanup);
+        var wr = fs.createWriteStream(target);
+        wr.on('error', rejectCleanup);
+        function rejectCleanup(err) {
+            rd.destroy();
+            wr.end();
+            reject(err);
+        }
+        wr.on('finish', resolve);
+        rd.pipe(wr);
+    });
+}
+
+
 
 fs.readFile(pakkafile)
 .then(JSON.parse).catch((e)=>{console.log("could not open the specified Pakkafile: " + e) ; process.exit(1)})
@@ -53,7 +96,34 @@ fs.readFile(pakkafile)
 			})	
 		}
 
-		fs.readFile(template)
+		var temporaryFolder = null;
+
+		Promise.resolve()
+		.then(()=>{
+			if (template == "{}") {
+				return Promise.resolve("{}")
+			} else {
+				if (options["repo"]){
+					temporaryFolder = tmp.dirSync();
+					
+					return pullRepo(options["repo"],temporaryFolder.name)
+					.then(()=>{
+						return Promise.all(
+							_.map(options.varfiles, (file)=>{
+								return copyFile(file , temporaryFolder.name + "/" + file)
+							})
+						)
+					})
+					.then(()=>{
+						return fs.readFile(temporaryFolder.name + "/" + template)
+					})
+
+				} else {
+					// open the file
+					return fs.readFile(template)
+				}
+			}
+		})
 		.then(JSON.parse).catch((e)=>{console.log("could not open the specified template: " + e) ; process.exit(2)})
 		.then((packerTemplate)=>{
 
@@ -61,8 +131,12 @@ fs.readFile(pakkafile)
 				_.forIn(pakkafile.includes[options["include"]] ,(data,section)=>{
 					if (section == "variables") {
 						_.merge(packerTemplate.variables , pakkafile.includes[options["include"]].variables)
-					} else {	
-						packerTemplate[section].push(pakkafile.includes[options["include"]][section])
+					} else {
+						if (packerTemplate[section]){
+							packerTemplate[section].push(pakkafile.includes[options["include"]][section])
+						} else {
+							packerTemplate[section] = pakkafile.includes[options["include"]][section]
+						}	
 					}
 				})
 			}
@@ -95,7 +169,12 @@ fs.readFile(pakkafile)
 			switches.push('-');
 			stdout(switches.join(' '));
 
-			var child = spawn('packer' , switches);
+			if (temporaryFolder != null) {
+				var child = spawn('packer' , switches , {cwd:temporaryFolder.name});
+			} else {
+				var child = spawn('packer' , switches , {cwd:process.cwd()});
+			}
+
 			try{
 				child.stdin.setEncoding('utf-8');
 				child.stdout.setEncoding('utf-8');
@@ -114,12 +193,15 @@ fs.readFile(pakkafile)
 			}
 
 		})
-		.catch(console.error);
+		.catch((err)=>{
+			// temporaryFolder.removeCallback()
+			console.error(err)
+		});
 	});
 })
 .catch(console.error)
 
 
 
-
+// (e)=>{temporaryFolder.removeCallback()}
 
