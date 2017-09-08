@@ -32,7 +32,7 @@ if (!pakkafile) {
 	pakkafile = "./Pakkafile"
 }
 
-var pullRepo = (repoPath,localPath) =>{
+var pullRepo = (repoPath,localPath,stdout,stderr) =>{
 	return new Promise((resolve,reject)=>{
 
 		var pullRepoProcess = spawn('git' , ['clone' , '--depth=1' , repoPath , '.'] , {cwd:localPath});
@@ -106,7 +106,7 @@ fs.readFile(pakkafile)
 				if (options["repo"]){
 					temporaryFolder = tmp.dirSync();
 					
-					return pullRepo(options["repo"],temporaryFolder.name)
+					return pullRepo(options["repo"],temporaryFolder.name,stdout,stderr)
 					.then(()=>{
 						return Promise.all(
 							_.map(options.varfiles, (file)=>{

@@ -2,7 +2,7 @@
     "templates":{
         "windows_10.json" :{
             "repo": "https://github.com/dayglo/packer-windows",
-            "varfiles" : [ "vcenter-creds.json" ],
+            "varfiles" : [ "examplevarfile.json" ],
             "vars": { "vcenter-vm_name" : "DXC-WINDOWS-10" },
             "only": "vmware-iso",
             "jsonpath" : {

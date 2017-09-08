@@ -1,6 +1,6 @@
 {
   "name": "pakka",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,7 @@
     "commander": "^2.11.0",
     "jsonpath": "^0.2.12",
     "lodash": "^4.17.4",
-    "promisify-node": "^0.4.0"
+    "promisify-node": "^0.4.0",
+    "tmp": "0.0.33"
   }
 }
