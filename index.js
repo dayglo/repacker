@@ -155,10 +155,6 @@ fs.readFile(pakkafile)
 				switches.push( key + '=' + value )
 			})
 
-			_.forEach(options.varfiles, (value)=>{
-				switches.push(`-var-file=${value}`);
-			})
-
 			if (options["only"]) {
 				switches.push(`-only=${options["only"]}`)
 			}
@@ -177,8 +173,17 @@ fs.readFile(pakkafile)
 			}
 
 			if (temporaryFolder != null) {
+				// copy all varfiles to target dir and rewrite varfiles 
+				options.varfiles.forEach((file)=>{
+					var fileName = path.basename(file);
+					fs.writeFileSync(temporaryFolder.name + "/" + fileName, fs.readFileSync(file));
+					switches.push(`-var-file=${fileName}`)
+				})
 				var child = spawn('packer' , switches , {cwd:temporaryFolder.name});
 			} else {
+				_.forEach(options.varfiles, (value)=>{
+					switches.push(`-var-file=${value}`);
+				})
 				var child = spawn('packer' , switches , {cwd:process.cwd()});
 			}
 
