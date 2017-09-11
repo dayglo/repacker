@@ -164,8 +164,7 @@ fs.readFile(pakkafile)
 			})
 
 			debugger;
-			switches.push('-');
-			stdout(switches.join(' '));
+
 
 			if (program.debug) {
 				stdout(JSON.stringify(packerTemplate, null, 4))
@@ -179,11 +178,13 @@ fs.readFile(pakkafile)
 					fs.writeFileSync(temporaryFolder.name + "/" + fileName, fs.readFileSync(file));
 					switches.push(`-var-file=${fileName}`)
 				})
+				switches.push('-');
 				var child = spawn('packer' , switches , {cwd:temporaryFolder.name});
 			} else {
 				_.forEach(options.varfiles, (value)=>{
 					switches.push(`-var-file=${value}`);
 				})
+				switches.push('-');
 				var child = spawn('packer' , switches , {cwd:process.cwd()});
 			}
 
