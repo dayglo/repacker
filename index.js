@@ -24,6 +24,7 @@ program
 	.version('0.0.1')
 	.usage("[pakkafile]")
 	.arguments('[pakkafile]')
+	.option('-d, --debug', "Send JSON to stdout and don\'t run builds")
 	.action((Pakkafile)=>{pakkafile = Pakkafile})
 	.parse(process.argv);
 
@@ -106,6 +107,7 @@ fs.readFile(pakkafile)
 				if (options["repo"]){
 					temporaryFolder = tmp.dirSync();
 					
+					stdout(`pulling repo ${options["repo"]} into ${temporaryFolder.name}`)
 					return pullRepo(options["repo"],temporaryFolder.name,stdout,stderr)
 					.then(()=>{
 						return Promise.all(
@@ -168,6 +170,11 @@ fs.readFile(pakkafile)
 			debugger;
 			switches.push('-');
 			stdout(switches.join(' '));
+
+			if (program.debug) {
+				stdout(JSON.stringify(packerTemplate, null, 4))
+				return;
+			}
 
 			if (temporaryFolder != null) {
 				var child = spawn('packer' , switches , {cwd:temporaryFolder.name});
