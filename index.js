@@ -196,7 +196,10 @@ fs.readFile(pakkafile)
 				child.stdout.on('data', stdout);
 				child.stderr.on('data', stderr);
 
-				child.on('error', stdout);
+				child.on('error', (error)=>{
+					stdout(JSON.stringify(error))
+
+				});
 
 				child.stdin.write(JSON.stringify(packerTemplate, null, 4));
 
