@@ -110,6 +110,9 @@ fs.readFile(pakkafile)
 					stdout(`pulling repo ${options["repo"]} into ${temporaryFolder.name}`)
 					return pullRepo(options["repo"],temporaryFolder.name,stdout,stderr)
 					.then(()=>{
+						if (!options["varfiles"]) {
+							options["varfiles"] = []
+						}
 						return Promise.all(
 							_.map(options.varfiles, (file)=>{
 								return copyFile(file , temporaryFolder.name + "/" + file)
