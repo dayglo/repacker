@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const _ = require('lodash');
 const crypto = require('crypto')
+const glob = require("glob");
+const mv = require('mv');
 const jp = require('jsonpath');
 const path = require('path');
 const program = require('commander');
@@ -73,6 +75,21 @@ function copyFile(source, target) {
     });
 }
 
+
+function moveFile(oldPath,newPath) {
+	return new Promise(function(resolve, reject) {
+		// mv.rename(oldPath,newPath,(err)=>{
+		// 	if(err) reject("couldnt move file " + err)
+		// 	else resolve()
+		// })
+
+		mv(oldPath, newPath, {mkdirp: true, clobber:true}, function(err) {
+			if(err) reject("couldnt move file " + err)
+			else resolve()
+		});
+
+	})
+}
 
 
 fs.readFile(pakkafile)
@@ -166,8 +183,6 @@ fs.readFile(pakkafile)
 				jp.value(packerTemplate, jsonpath, value)
 			})
 
-			debugger;
-
 
 			if (program.debug) {
 				stdout(JSON.stringify(packerTemplate, null, 4))
@@ -191,30 +206,66 @@ fs.readFile(pakkafile)
 				var child = spawn('packer' , switches , {cwd:process.cwd()});
 			}
 
-			try{
-				child.stdin.setEncoding('utf-8');
-				child.stdout.setEncoding('utf-8');
-				child.stderr.setEncoding('utf-8');
+			return new Promise((resolve,reject)=>{
+				try{
+					child.stdin.setEncoding('utf-8');
+					child.stdout.setEncoding('utf-8');
+					child.stderr.setEncoding('utf-8');
 
-				child.stdout.on('data', stdout);
-				child.stderr.on('data', stderr);
+					child.stdout.on('data', stdout);
+					child.stderr.on('data', stderr);
 
-				child.on('error', (error)=>{
-					stdout(JSON.stringify(error))
+					child.on('error', (error)=>{
+						stdout(JSON.stringify(error))
+					});
 
-				});
+					child.on('exit',(code)=>{
+						if (code == 0) {
+							resolve()
+						} else {
+							reject(new Error("packer did not run successfully. The exit code was: " + code))
+						}
+					})
 
-				child.stdin.write(JSON.stringify(packerTemplate, null, 4));
+					child.stdin.write(JSON.stringify(packerTemplate, null, 4));
 
-				child.stdin.end(); 
-			} catch (e) {
-				child.stdin.end(); 
+					child.stdin.end(); 
+				} catch (e) {
+					child.stdin.end(); 
+					reject(new Error("packer did not run successfully: " + e))
+				}
+			})
+		})
+		.then(()=>{
+			if (temporaryFolder){
+				
+				return new Promise((resolve,reject)=>{
+
+					glob(temporaryFolder.name + "/output*", {}, function (er, files) {
+
+						if (er) reject(er)
+
+						setTimeout(()=>{
+							var moves = files.map((file)=>{
+								stdout("moving " + file + " to " + process.cwd() + "/" + path.basename(file))
+								return moveFile(file, process.cwd() + "/" + path.basename(file))
+							})
+							Promise.all(moves)
+							.then((m)=>{
+
+								debugger;
+							})
+							.then(resolve,reject)
+						},5000)
+					})
+
+				})
 			}
 
 		})
 		.catch((err)=>{
 			// temporaryFolder.removeCallback()
-			console.error(err)
+			console.error(console.log("pakka failed to process a template: " + err))
 		});
 	});
 })
