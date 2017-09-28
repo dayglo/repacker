@@ -11,6 +11,8 @@ const spawn = require('child_process').spawn;
 const tmp = require('tmp');
 const url = require('url');
 const util = require('util');
+const promiseRetry = require('promise-retry');
+
 
 const fs = promisify("fs");
 
@@ -75,19 +77,26 @@ function copyFile(source, target) {
     });
 }
 
+function moveFileRetry(oldPath,newPath){
+	return promiseRetry(function (retry, number) {
+		if (typeof number == undefined) var number = 1;
+		if (number > 1) {console.log("retrying move of "+ oldPath)}
+		if (number > 20) {reject(new Error("Couldnt move files."))}
+	    return moveFile(oldPath,newPath)
+	    .catch(retry);
+	})
+}
+
 
 function moveFile(oldPath,newPath) {
 	return new Promise(function(resolve, reject) {
-		// mv.rename(oldPath,newPath,(err)=>{
-		// 	if(err) reject("couldnt move file " + err)
-		// 	else resolve()
-		// })
-
 		mv(oldPath, newPath, {mkdirp: true, clobber:true}, function(err) {
 			if(err) reject("couldnt move file " + err)
-			else resolve()
+			else {
+				console.log('moved files')
+				resolve()
+			}
 		});
-
 	})
 }
 
@@ -122,7 +131,7 @@ fs.readFile(pakkafile)
 				return Promise.resolve("{}")
 			} else {
 				if (options["repo"]){
-					temporaryFolder = tmp.dirSync();
+					temporaryFolder = tmp.dirSync({unsafeCleanup:true});
 					
 					stdout(`pulling repo ${options["repo"]} into ${temporaryFolder.name}`)
 					return pullRepo(options["repo"],temporaryFolder.name,stdout,stderr)
@@ -245,18 +254,21 @@ fs.readFile(pakkafile)
 
 						if (er) reject(er)
 
-						setTimeout(()=>{
+						// setTimeout(()=>{
+
 							var moves = files.map((file)=>{
 								stdout("moving " + file + " to " + process.cwd() + "/" + path.basename(file))
-								return moveFile(file, process.cwd() + "/" + path.basename(file))
+								return moveFileRetry(file, process.cwd() + "/" + path.basename(file))
 							})
-							Promise.all(moves)
-							.then((m)=>{
 
-								debugger;
+							Promise.all(moves)
+							.then(()=>{
+								console.log("removing temp directory")
+								temporaryFolder.removeCallback()
 							})
 							.then(resolve,reject)
-						},5000)
+
+						// },500)
 					})
 
 				})
@@ -264,7 +276,10 @@ fs.readFile(pakkafile)
 
 		})
 		.catch((err)=>{
-			// temporaryFolder.removeCallback()
+			if (temporaryFolder) {
+				console.log("removing temp directory")
+				temporaryFolder.removeCallback()
+			}
 			console.error(console.log("pakka failed to process a template: " + err))
 		});
 	});

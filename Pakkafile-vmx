@@ -3,7 +3,10 @@
         "test.json": {
             "include": "vmx",
             "only":"vmware-vmx",
-            "repo": "http://github.com/dayglo/vmxtest"
+            "repo": "http://github.com/dayglo/vmxtest",
+            "jsonpath" : {
+                "builders[?(@.type=='vmware-iso')].boot_wait" : "2s"
+            }
         }
     },
     "includes": {
