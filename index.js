@@ -24,13 +24,21 @@ const fs = promisify("fs");
 
 var pakkafile;
 
+
+function collect(val, memo) {
+  memo.push(val);
+  return memo;
+}
+
 program
 	.version('0.0.1')
 	.usage("[pakkafile]")
 	.arguments('[pakkafile]')
 	.option('-d, --debug', "Send JSON to stdout and don\'t run builds")
+	.option('-v --var [key=value]', 'include a variable into packer build' , collect, [])
 	.action((Pakkafile)=>{pakkafile = Pakkafile})
 	.parse(process.argv);
+
 
 
 if (!pakkafile) {
@@ -184,6 +192,12 @@ fs.readFile(pakkafile)
 				switches.push( key + '=' + value )
 			})
 
+			_.forEach(program.var ,(v)=>{ 
+				var [key,value] = v.split('=')
+				switches.push('-var');
+				switches.push( key + '=' + value )
+			})
+
 			if (options["only"]) {
 				switches.push(`-only=${options["only"]}`)
 			}
@@ -194,7 +208,10 @@ fs.readFile(pakkafile)
 
 
 			if (program.debug) {
+				stdout("switches: " + JSON.stringify(switches))
+				stdout("template:")
 				stdout(JSON.stringify(packerTemplate, null, 4))
+
 				return;
 			}
 
