@@ -171,7 +171,7 @@ fs.readFile(pakkafile)
 			if (options["replace"]) {
 				_.forEach(["variables","builders","provisioners","post-processors"] , (section)=>{
 					if (options["replace"][section]) {
-						var fragmentName = options["include"][section]
+						var fragmentName = options["replace"][section]
 						if (section == "variables") {
 							packerTemplate[section] = pakkafile.fragments[fragmentName]
 						} else {
