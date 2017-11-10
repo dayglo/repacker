@@ -186,16 +186,18 @@ fs.readFile(pakkafile)
 			if (options["include"]) {
 				_.forEach(["variables","builders","provisioners","post-processors"] , (section)=>{
 					if (options["include"][section]) {
-						var fragmentName = options["include"][section]
-						if (section == "variables") {
-							_.merge(packerTemplate.variables , pakkafile.fragments[fragmentName])
-						} else {
-							if (packerTemplate[section]){
-								packerTemplate[section].push(pakkafile.fragments[fragmentName])
+						var fragmentNames = options["include"][section]
+						_.forEach(fragmentNames, (fragmentName)=>{
+							if (section == "variables") {
+								_.merge(packerTemplate.variables , pakkafile.fragments[fragmentName])
 							} else {
-								packerTemplate[section] = pakkafile.fragments[fragmentName]
-							}	
-						}
+								if (packerTemplate[section]){
+									packerTemplate[section].push(pakkafile.fragments[fragmentName])
+								} else {
+									packerTemplate[section] = pakkafile.fragments[fragmentName]
+								}	
+							}
+						})
 					}
 				})
 			}

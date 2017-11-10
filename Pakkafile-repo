@@ -8,8 +8,8 @@
                 "post-processors": "post-proc-y"
             },
             "include": {
-                "builders": "builderx",
-                "post-processors": "post-proc-y"
+                "builders": ["builderx","buildery"],
+                "post-processors": ["post-proc-y"]
             },
             "jsonpath" : {
                 "builders[?(@.type=='vmware-iso')].boot_wait" : "10m",
@@ -19,6 +19,9 @@
     },
     "fragments": {
         "builderx":{
+            "type": "vmware-vmx"
+        },
+        "buildery":{
             "type": "vmware-vmx"
         },
         "post-proc-y": {
