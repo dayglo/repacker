@@ -4,11 +4,25 @@
             "repo": "https://github.com/dayglo/packer-windows",
             "vars": { "vcenter-vm_name" : "DXC-WINDOWS-10" },
             "only": "vmware-iso",
+            "replace":{
+                "post-processors": "post-proc-y"
+            },
+            "include": {
+                "builders": "builderx",
+                "post-processors": "post-proc-y"
+            },
             "jsonpath" : {
                 "builders[?(@.type=='vmware-iso')].boot_wait" : "10m",
                 "builders[?(@.type=='vmware-iso')].winrm_timeout": "5h"
             }
         }
     },
-    "includes": {}
+    "fragments": {
+        "builderx":{
+            "type": "vmware-vmx"
+        },
+        "post-proc-y": {
+            "type": "vsphere"
+        }
+    }
 }

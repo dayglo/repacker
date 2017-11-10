@@ -166,20 +166,39 @@ fs.readFile(pakkafile)
 		.then(JSON.parse).catch((e)=>{console.log("could not open the specified template: " + e) ; process.exit(2)})
 		.then((packerTemplate)=>{
 
-			if (options["include"]) {
-				_.forIn(pakkafile.includes[options["include"]] ,(data,section)=>{
-					if (section == "variables") {
-						_.merge(packerTemplate.variables , pakkafile.includes[options["include"]].variables)
-					} else {
-						if (packerTemplate[section]){
-							packerTemplate[section].push(pakkafile.includes[options["include"]][section])
+			if (options["replace"]) {
+				_.forEach(["variables","builders","provisioners","post-processors"] , (section)=>{
+					if (options["replace"][section]) {
+						var fragmentName = options["include"][section]
+						if (section == "variables") {
+							packerTemplate[section] = pakkafile.fragments[fragmentName]
 						} else {
-							packerTemplate[section] = pakkafile.includes[options["include"]][section]
-						}	
+							packerTemplate[section] = [pakkafile.fragments[fragmentName]]
+						}
 					}
 				})
 			}
 
+			return packerTemplate
+		})
+		.then((packerTemplate)=>{
+
+			if (options["include"]) {
+				_.forEach(["variables","builders","provisioners","post-processors"] , (section)=>{
+					if (options["include"][section]) {
+						var fragmentName = options["include"][section]
+						if (section == "variables") {
+							_.merge(packerTemplate.variables , pakkafile.fragments[fragmentName])
+						} else {
+							if (packerTemplate[section]){
+								packerTemplate[section].push(pakkafile.fragments[fragmentName])
+							} else {
+								packerTemplate[section] = pakkafile.fragments[fragmentName]
+							}	
+						}
+					}
+				})
+			}
 			return packerTemplate
 		})
 		.then((packerTemplate)=>{

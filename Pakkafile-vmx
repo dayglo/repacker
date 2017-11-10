@@ -1,39 +1,39 @@
 {
-    "templates": {
-        "test.json": {
-            "include": "vmx",
-            "only":"vmware-vmx",
-            "repo": "http://github.com/dayglo/vmxtest",
-            "jsonpath" : {
-                "builders[?(@.type=='vmware-iso')].boot_wait" : "2s"
-            }
-        }
-    },
-    "includes": {
-        "vmx": {
-            "builders": [
-				{
-					"type": "vmware-vmx",
-					"source_path": "/Users/gee/Dropbox (Personal)/work/al/HPE/future/packer-templates/output-ubuntu-16.04-amd64-vmware-iso/packer-ubuntu-16.04-amd64.vmx",
-					"headless": true,
-					"ssh_username": "vagrant",
-					"ssh_password": "vagrant",
-					"shutdown_command": "sudo systemctl poweroff",
-					"vnc_port_min": 5900,
-					"vnc_port_max": 5980,
-					"floppy_files": [
-					],
-					"vmx_data": {
-						"RemoteDisplay.vnc.enabled": "false",
-						"RemoteDisplay.vnc.port": "5900",
-						"memsize": "6000",
-						"numvcpus": "2",
-						"scsi0.virtualDev": "lsisas1068"
-					}
-				}
-            ]
-        }
-    }
+	"templates": {
+		"test.json": {
+			"include": {
+				"builders": "vmx-builder" 
+			},
+			"only":"vmware-vmx",
+			"repo": "http://github.com/dayglo/vmxtest",
+			"jsonpath" : {
+				"builders[?(@.type=='vmware-iso')].boot_wait" : "2s"
+			}
+		}
+	},
+	"fragments": {
+		"vmx-builder":{
+			"type": "vmware-vmx",
+			"source_path": "/Users/gee/Dropbox (Personal)/work/al/HPE/future/packer-templates/output-ubuntu-16.04-amd64-vmware-iso/packer-ubuntu-16.04-amd64.vmx",
+			"headless": true,
+			"ssh_username": "vagrant",
+			"ssh_password": "vagrant",
+			"shutdown_command": "sudo systemctl poweroff",
+			"vnc_port_min": 5900,
+			"vnc_port_max": 5980,
+			"floppy_files": [
+			],
+			"vmx_data": {
+				"RemoteDisplay.vnc.enabled": "false",
+				"RemoteDisplay.vnc.port": "5900",
+				"memsize": "6000",
+				"numvcpus": "2",
+				"scsi0.virtualDev": "lsisas1068"
+			}
+		}
+			
+		}
+	}
 }
 
 
