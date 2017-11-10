@@ -13,6 +13,8 @@ const url = require('url');
 const util = require('util');
 const promiseRetry = require('promise-retry');
 
+yaml = require('js-yaml');
+
 
 const fs = promisify("fs");
 
@@ -110,7 +112,7 @@ function moveFile(oldPath,newPath) {
 
 
 fs.readFile(pakkafile)
-.then(JSON.parse).catch((e)=>{console.log("could not open the specified Pakkafile: " + e) ; process.exit(1)})
+.then(yaml.safeLoad).catch((e)=>{console.log("could not open the specified Pakkafile: " + e) ; process.exit(1)})
 .then((pakkafile)=>{
 
 	_.forIn(pakkafile.templates ,(options,template)=>{

@@ -1,31 +1,25 @@
-{
-    "templates":{
-        "windows_10.json" :{
-            "repo": "https://github.com/dayglo/packer-windows",
-            "vars": { "vcenter-vm_name" : "DXC-WINDOWS-10" },
-            "only": "vmware-iso",
-            "replace":{
-                "post-processors": "post-proc-y"
-            },
-            "include": {
-                "builders": ["builderx","buildery"],
-                "post-processors": ["post-proc-y"]
-            },
-            "jsonpath" : {
-                "builders[?(@.type=='vmware-iso')].boot_wait" : "10m",
-                "builders[?(@.type=='vmware-iso')].winrm_timeout": "5h"
-            }
-        }
-    },
-    "fragments": {
-        "builderx":{
-            "type": "vmware-vmx"
-        },
-        "buildery":{
-            "type": "vmware-vmx"
-        },
-        "post-proc-y": {
-            "type": "vsphere"
-        }
-    }
-}
+---
+templates:
+  windows_10.json:
+    repo: https://github.com/dayglo/packer-windows
+    vars:
+      vcenter-vm_name: DXC-WINDOWS-10
+    only: vmware-iso
+    replace:
+      post-processors: post-proc-y
+    include:
+      builders:
+      - builderx
+      - buildery
+      post-processors:
+      - post-proc-y
+    jsonpath:
+      builders[?(@.type=='vmware-iso')].boot_wait: 10m
+      builders[?(@.type=='vmware-iso')].winrm_timeout: 5h
+fragments:
+  builderx:
+    type: vmware-vmx
+  buildery:
+    type: vmware-vmx
+  post-proc-y:
+    type: vsphere
