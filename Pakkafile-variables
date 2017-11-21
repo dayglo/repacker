@@ -1,0 +1,48 @@
+---
+templates:
+  "{}":
+    include: 
+      variables:
+        - variables1
+      builders:
+        - builders1
+      provisioners:
+        #- provisioners1
+    vars:
+      vcenter-inputTemplate: DXC-RHEL74-TEMPLATE-001
+      vcenter-outputTemplate: DXC-TCBUILDAGENT-V1.0
+fragments:
+  variables1:
+    vcenter-host: ''
+    vcenter-cluster: ''
+    vcenter-datacenter: ''
+    vcenter-datastore: ''
+    vcenter-username: ''
+    vcenter-password: ''
+    vcenter-disk_mode: ''
+    vcenter-vm_folder: ''
+    vcenter-vm_network: ''
+    vcenter-insecure: 'false'
+    guest-password: vagrant
+  builders1:
+  - type: vsphere
+    vcenter_server: "{{ user `vcenter-host` }}"
+    username: "{{ user `vcenter-username` }}"
+    password: "{{ user `vcenter-password` }}"
+    insecure_connection: "{{ user `vcenter-insecure` }}"
+    datacenter: "{{ user `vcenter-datacenter` }}"
+    template: "{{ user `vcenter-outputTemplate` }}"
+    vm_name: "{{ user `vcenter-vm_name` }}"
+    host: "{{ user `vcenter-cluster` }}"
+    linked_clone: false
+    datastore: "{{ user `vcenter-datastore` }}"
+    ssh_username: vagrant
+    ssh_password: "{{user `guest_password`}}"
+    shutdown_command: echo '{{user `guest_password`}}' | sudo -S shutdown -P now
+    shutdown_timeout: 5m
+    CPUs: 2
+    RAM: 4096
+    convert_to_template: true
+  provisioners1:
+  - type: ansible
+    playbook_file: ./main.yml
