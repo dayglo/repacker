@@ -191,7 +191,12 @@ fs.readFile(pakkafile)
 						var fragmentNames = options["include"][section]
 						_.forEach(fragmentNames, (fragmentName)=>{
 							if (section == "variables") {
-								_.merge(packerTemplate.variables , pakkafile.fragments[fragmentName])
+								if (packerTemplate["variables"]){
+									_.merge(packerTemplate.variables , pakkafile.fragments[fragmentName])
+								} else {
+									packerTemplate.variables = pakkafile.fragments[fragmentName]
+								}
+								
 							} else {
 								if (packerTemplate[section]){
 									packerTemplate[section].push(pakkafile.fragments[fragmentName])
