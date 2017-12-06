@@ -1,7 +1,7 @@
-Pakka
+Repacker
 =====
 
-Pakka helps you modularise and re-use packer templates. Dont repeat yourself.
+Repacker helps you modularise and re-use packer templates. Dont repeat yourself.
 
 Things you can do with pakka:
 
@@ -12,11 +12,11 @@ Safely pull in changes from upstream without having to manually merge templates.
 # Install
 Make sure you have nodejs and packer installed, then run 
 
-npm install -g pakka
+npm install -g repacker
 
 # Use
 
-Write a *Pakkafile* in your packer template's directory and invoke ```pakka```.
+Write a *Repackerfile* in your packer template's directory and invoke ```pakka```.
 
 It will invoke packer to build the referenced templates, integrating all the transformations included in the pakkafile.
 

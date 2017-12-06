@@ -1,6 +1,6 @@
 {
-  "name": "pakka",
-  "version": "4.0.4",
+  "name": "repacker",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,8 @@
   "author": "George Cairns",
   "license": "ISC",
   "bin": {
-    "pakka": "./index.js"
+    "pakka": "./index.js",
+    "repacker": "./index.js"
   },
   "dependencies": {
     "commander": "^2.11.0",

@@ -24,7 +24,7 @@ const fs = promisify("fs");
 //     return memo;
 // }
 
-var pakkafile;
+var repackerfile;
 
 
 function collect(val, memo) {
@@ -34,17 +34,17 @@ function collect(val, memo) {
 
 program
 	.version('0.0.1')
-	.usage("[pakkafile]")
-	.arguments('[pakkafile]')
+	.usage("[repackerfile]")
+	.arguments('[repackerfile]')
 	.option('-d, --debug', "Send JSON to stdout and don\'t run builds")
 	.option('-v --var [key=value]', 'include a variable into packer build' , collect, [])
-	.action((Pakkafile)=>{pakkafile = Pakkafile})
+	.action((Repackerfile)=>{repackerfile = Repackerfile})
 	.parse(process.argv);
 
 
 
-if (!pakkafile) {
-	pakkafile = "./Pakkafile"
+if (!repackerfile) {
+	repackerfile = "./Repackerfile"
 }
 
 var pullRepo = (repoPath,localPath,stdout,stderr) =>{
@@ -111,13 +111,13 @@ function moveFile(oldPath,newPath) {
 }
 
 
-fs.readFile(pakkafile)
-.then(yaml.safeLoad).catch((e)=>{console.log("could not open the specified Pakkafile: " + e) ; process.exit(1)})
-.then((pakkafile)=>{
+fs.readFile(repackerfile)
+.then(yaml.safeLoad).catch((e)=>{console.log("could not open the specified Repackerfile: " + e) ; process.exit(1)})
+.then((repackerfile)=>{
 
-	_.forIn(pakkafile.templates ,(options,template)=>{
+	_.forIn(repackerfile.templates ,(options,template)=>{
 
-		var stdout = (text) => {
+		var stdout = (text = "") => {
 			var prefix = template;
 			text = text.split('\n');
 			_.forEach(text, (t)=>{
@@ -125,7 +125,7 @@ fs.readFile(pakkafile)
 			})	
 		}
 
-		var stderr = (text) => {
+		var stderr = (text = "") => {
 			var prefix = template;
 			text = text.split('\n');
 			_.forEach(text, (t)=>{
@@ -173,9 +173,9 @@ fs.readFile(pakkafile)
 					if (options["replace"][section]) {
 						var fragmentName = options["replace"][section]
 						if (section == "variables") {
-							packerTemplate[section] = pakkafile.fragments[fragmentName]
+							packerTemplate[section] = repackerfile.fragments[fragmentName]
 						} else {
-							packerTemplate[section] = [pakkafile.fragments[fragmentName]]
+							packerTemplate[section] = [repackerfile.fragments[fragmentName]]
 						}
 					}
 				})
@@ -192,16 +192,16 @@ fs.readFile(pakkafile)
 						_.forEach(fragmentNames, (fragmentName)=>{
 							if (section == "variables") {
 								if (packerTemplate["variables"]){
-									_.merge(packerTemplate.variables , pakkafile.fragments[fragmentName])
+									_.merge(packerTemplate.variables , repackerfile.fragments[fragmentName])
 								} else {
-									packerTemplate.variables = pakkafile.fragments[fragmentName]
+									packerTemplate.variables = repackerfile.fragments[fragmentName]
 								}
 								
 							} else {
 								if (packerTemplate[section]){
-									packerTemplate[section].push(pakkafile.fragments[fragmentName])
+									packerTemplate[section].push(repackerfile.fragments[fragmentName])
 								} else {
-									packerTemplate[section] = pakkafile.fragments[fragmentName]
+									packerTemplate[section] = repackerfile.fragments[fragmentName]
 								}	
 							}
 						})
@@ -325,7 +325,7 @@ fs.readFile(pakkafile)
 				console.log("removing temp directory")
 				temporaryFolder.removeCallback()
 			}
-			console.error(console.log("pakka failed to process a template: " + err))
+			console.error(console.log("repacker failed to process a template: " + err))
 		});
 	});
 })
