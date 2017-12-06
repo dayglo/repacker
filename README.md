@@ -3,7 +3,7 @@ Repacker
 
 Repacker helps you modularise and re-use packer templates. Dont repeat yourself.
 
-Things you can do with pakka:
+Things you can do with repacker:
 
 Re-use pre-existing open-source packer templates with your own infrastructure;
 Maintain libraries of provisioners/post-processors and apply them to multiple builds;
@@ -16,9 +16,9 @@ npm install -g repacker
 
 # Use
 
-Write a *Repackerfile* in your packer template's directory and invoke ```pakka```.
+Write a *Repackerfile* in your packer template's directory and invoke ```repacker```.
 
-It will invoke packer to build the referenced templates, integrating all the transformations included in the pakkafile.
+It will invoke packer to build the referenced templates, integrating all the transformations included in the Repackerfile.
 
 TODO: examples.
 
