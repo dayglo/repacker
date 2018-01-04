@@ -1,0 +1,27 @@
+---
+templates:
+  "{}":
+    include: 
+      variables:
+        - variables1
+        - variables2
+      builders:
+        - builders1
+    replace:
+      post-processors:
+        postproc1
+    vars:
+      vartest1: DXC-RHEL74-TEMPLATE-001
+      vartest2: DXC-TCBUILDAGENT-V1.0
+fragments:
+  variables1: ./variables1.json
+  variables2:
+    wat: 1
+    foo: witches
+  postproc1: ./postproc1.yaml
+  builders1:
+  - type: vsphere
+    vcenter_server: "{{ user `vcenter-host` }}"
+  provisioners1:
+  - type: ansible
+    playbook_file: ./main.yml

@@ -1,0 +1,4 @@
+type: shell-local
+inline:
+ - ovftool output-vmware-iso/rhel-7.4-vmware.vmx rhel-7.4-vmware.ova
+   

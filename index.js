@@ -15,8 +15,8 @@ const promiseRetry = require('promise-retry');
 
 yaml = require('js-yaml');
 
-
-const fs = promisify("fs");
+const fs = require("fs");
+const fsp = promisify("fs");
 
 
 // function collect (val, memo) {
@@ -73,9 +73,9 @@ var pullRepo = (repoPath,localPath,stdout,stderr) =>{
 
 function copyFile(source, target) {
     return new Promise(function(resolve, reject) {
-        var rd = fs.createReadStream(source);
+        var rd = fsp.createReadStream(source);
         rd.on('error', rejectCleanup);
-        var wr = fs.createWriteStream(target);
+        var wr = fsp.createWriteStream(target);
         wr.on('error', rejectCleanup);
         function rejectCleanup(err) {
             rd.destroy();
@@ -110,8 +110,23 @@ function moveFile(oldPath,newPath) {
 	})
 }
 
+function loadAndParseFragmentFileSync(filePath) {
 
-fs.readFile(repackerfile)
+
+
+
+	var file = fs.readFileSync(filePath)
+	try {
+		return yaml.safeLoad(file)
+	} catch (e) {
+		console.error("Could not parse the fragment file " + filePath + ". " + e)
+		process.exit(4)
+	}
+
+}
+
+
+fsp.readFile(repackerfile)
 .then(yaml.safeLoad).catch((e)=>{console.log("could not open the specified Repackerfile: " + e) ; process.exit(1)})
 .then((repackerfile)=>{
 
@@ -156,12 +171,12 @@ fs.readFile(repackerfile)
 						)
 					})
 					.then(()=>{
-						return fs.readFile(temporaryFolder.name + "/" + template)
+						return fsp.readFile(temporaryFolder.name + "/" + template)
 					})
 
 				} else {
 					// open the file
-					return fs.readFile(template)
+					return fsp.readFile(template)
 				}
 			}
 		})
@@ -170,17 +185,26 @@ fs.readFile(repackerfile)
 
 			if (options["replace"]) {
 				_.forEach(["variables","builders","provisioners","post-processors"] , (section)=>{
-					if (options["replace"][section]) {
+
+					if ( options["replace"][section] ) {
+
 						var fragmentName = options["replace"][section]
-						if (section == "variables") {
-							packerTemplate[section] = repackerfile.fragments[fragmentName]
+						var newData;
+						if ( typeof repackerfile.fragments[fragmentName] === "string" ) {
+							newData = loadAndParseFragmentFileSync( repackerfile.fragments[fragmentName] );
 						} else {
-							packerTemplate[section] = [repackerfile.fragments[fragmentName]]
+							newData = repackerfile.fragments[fragmentName]
 						}
+
+						if (section == "variables") {
+							packerTemplate[section] = newData
+						} else {
+							packerTemplate[section] = [newData]
+						}
+
 					}
 				})
 			}
-
 			return packerTemplate
 		})
 		.then((packerTemplate)=>{
@@ -190,20 +214,32 @@ fs.readFile(repackerfile)
 					if (options["include"][section]) {
 						var fragmentNames = options["include"][section]
 						_.forEach(fragmentNames, (fragmentName)=>{
+							
+							var newData;
+							if ( typeof repackerfile.fragments[fragmentName] === "string" ) {
+								newData = loadAndParseFragmentFileSync( repackerfile.fragments[fragmentName] );
+							} else {
+								newData = repackerfile.fragments[fragmentName]
+							}
+
 							if (section == "variables") {
 								if (packerTemplate["variables"]){
-									_.merge(packerTemplate.variables , repackerfile.fragments[fragmentName])
+									_.merge(packerTemplate.variables , newData)
 								} else {
-									packerTemplate.variables = repackerfile.fragments[fragmentName]
+									packerTemplate.variables = newData
 								}
 								
 							} else {
 								if (packerTemplate[section]){
-									packerTemplate[section].push(repackerfile.fragments[fragmentName])
+									packerTemplate[section].push(newData)
 								} else {
-									packerTemplate[section] = repackerfile.fragments[fragmentName]
+									packerTemplate[section] = newData
 								}	
 							}
+
+
+
+
 						})
 					}
 				})
@@ -247,7 +283,7 @@ fs.readFile(repackerfile)
 				// copy all varfiles to target dir and rewrite varfiles 
 				options.varfiles.forEach((file)=>{
 					var fileName = path.basename(file);
-					fs.writeFileSync(temporaryFolder.name + "/" + fileName, fs.readFileSync(file));
+					fsp.writeFileSync(temporaryFolder.name + "/" + fileName, fsp.readFileSync(file));
 					switches.push(`-var-file=${fileName}`)
 				})
 				switches.push('-');
