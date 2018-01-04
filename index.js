@@ -233,7 +233,7 @@ fsp.readFile(repackerfile)
 								if (packerTemplate[section]){
 									packerTemplate[section].push(newData)
 								} else {
-									packerTemplate[section] = newData
+									packerTemplate[section] = [newData]
 								}	
 							}
 

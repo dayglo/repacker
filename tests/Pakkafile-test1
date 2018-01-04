@@ -7,6 +7,7 @@ templates:
         - variables2
       builders:
         - builders1
+        - builders2
     replace:
       post-processors:
         postproc1
@@ -20,8 +21,11 @@ fragments:
     foo: witches
   postproc1: ./postproc1.yaml
   builders1:
-  - type: vsphere
+    type: vsphere
     vcenter_server: "{{ user `vcenter-host` }}"
+  builders2:
+    type: whatever
+    biscuits: "gravy"
   provisioners1:
-  - type: ansible
+    type: ansible
     playbook_file: ./main.yml
