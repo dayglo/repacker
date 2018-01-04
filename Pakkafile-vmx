@@ -7,7 +7,7 @@ templates:
     only: vmware-vmx
     repo: http://github.com/dayglo/vmxtest
     jsonpath:
-      builders[?(@.type=='vmware-iso')].boot_wait: 2s
+      builders[?(@.type=='vmware-vmx')].boot_wait: 10s
 fragments:
   vmx-builder:
     type: vmware-vmx

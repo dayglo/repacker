@@ -13,6 +13,8 @@ const url = require('url');
 const util = require('util');
 const promiseRetry = require('promise-retry');
 
+const package = require('./package.json')
+
 yaml = require('js-yaml');
 
 const fs = require("fs");
@@ -33,7 +35,7 @@ function collect(val, memo) {
 }
 
 program
-	.version('0.0.1')
+	.version(package.version)
 	.usage("[repackerfile]")
 	.arguments('[repackerfile]')
 	.option('-d, --debug', "Send JSON to stdout and don\'t run builds")
@@ -236,9 +238,6 @@ fsp.readFile(repackerfile)
 									packerTemplate[section] = [newData]
 								}	
 							}
-
-
-
 
 						})
 					}
