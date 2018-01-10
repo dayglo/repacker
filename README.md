@@ -39,12 +39,15 @@ Repacker does the following steps:
 
 1. Execute packer with options
 	1. only: run a specific builder
-	2. 
+	2. vars: add variables to packer build command line.
+	3. varfiles: add varfiles to the packer build commaind line
+
+1. Move any output files to a specified location.
 
 
 ## Get the target template
 
-
+todo
 
 ## Transformations
 
@@ -62,5 +65,13 @@ Append content into a packer section with a fragment from the repacker file or a
 
 Use standard JSONpath to edit individual settings
 
+
+## Execute
+
+todo
+
+## Move
+
+todo
 
 # Repacker file format
