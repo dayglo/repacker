@@ -1,0 +1,17 @@
+type: vmware-vmx
+source_path: /users/gee/repacker_builds/centos/output-centos-7.4-x86_64-vmware-iso/packer-centos-7.4-x86_64.vmx
+headless: false
+ssh_username: vagrant
+ssh_password: vagrant
+shutdown_command: echo 'vagrant' | sudo -S /sbin/halt -h -p
+vnc_port_min: 5900
+vnc_port_max: 5980
+floppy_files: []
+vm_name: "{{user `vm_name`}}"
+vmx_data:
+  RemoteDisplay.vnc.enabled: 'false'
+  RemoteDisplay.vnc.port: '5900'
+  memsize: '6000'
+  numvcpus: '2'
+  ethernet0.virtualDev: vmxnet3
+  virtualHW.version: "11"

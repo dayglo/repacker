@@ -1,0 +1,16 @@
+---
+templates:
+  "{}":
+    replace: 
+      builders: vmx-builder
+      provisioners: ansibleprovisioner
+    jsonpath:
+      builders[?(@.type=='vmware-vmx')].headless: true
+      builders[?(@.type=='vmware-vmx')].source_path: /users/gee/repacker_builds/centos/centos74/centos74.vmx
+      builders[?(@.type=='vmware-vmx')].vm_name: latest
+    output: /users/gee/repacker_builds/postgres/
+fragments:
+  vmx-builder: ./vmx-builder.yml
+  ansibleprovisioner:
+    type: ansible
+    playbook_file: ./postgres-playbook.yaml

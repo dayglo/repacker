@@ -1,0 +1,18 @@
+---
+templates:
+  centos-7.4-x86_64.json:
+    vars:
+      memory: 2048
+      cpus: 2
+    repo: https://github.com/dayglo/packer-templates
+    only: vmware-iso
+    jsonpath:
+      builders[?(@.type=='vmware-iso')].boot_wait: 10s
+      builders[?(@.type=='vmware-iso')].headless: true
+      builders[?(@.type=='vmware-iso')].vm_name: centos74
+    replace:
+      post-processors: empty
+    output: /users/gee/repacker_builds/centos/
+fragments:
+  empty:
+    []

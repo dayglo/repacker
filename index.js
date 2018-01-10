@@ -40,6 +40,7 @@ program
 	.arguments('[repackerfile]')
 	.option('-d, --debug', "Send JSON to stdout and don\'t run builds")
 	.option('-v --var [key=value]', 'include a variable into packer build' , collect, [])
+	.option('-t --tempfiles', "dont delete temp files")
 	.action((Repackerfile)=>{repackerfile = Repackerfile})
 	.parse(process.argv);
 
@@ -249,7 +250,7 @@ fsp.readFile(repackerfile)
 
 			stdout(JSON.stringify(options));
 
-			var switches = ['build' , '-on-error=abort'];
+			var switches = ['build' , '-on-error=abort', '-force'];
 			_.forIn(options.vars ,(value,key)=>{ 
 				switches.push('-var');
 				switches.push( key + '=' + value )
@@ -326,37 +327,46 @@ fsp.readFile(repackerfile)
 			})
 		})
 		.then(()=>{
+			var targetPath = process.cwd();
+
 			if (temporaryFolder){
+				targetPath = temporaryFolder.name
+			}
 				
-				return new Promise((resolve,reject)=>{
+			return new Promise((resolve,reject)=>{
 
-					glob(temporaryFolder.name + "/output*", {}, function (er, files) {
+				glob(targetPath + "/output*", {}, function (er, files) {
 
-						if (er) reject(er)
+					if (er) reject(er)
 
-						// setTimeout(()=>{
+					var moves = files.map((file)=>{
 
-							var moves = files.map((file)=>{
-								stdout("moving " + file + " to " + process.cwd() + "/" + path.basename(file))
-								return moveFileRetry(file, process.cwd() + "/" + path.basename(file))
-							})
+						var outputLocation = process.cwd() + "/" + path.basename(file)
+						if (options["output"]) {
+							outputLocation = options["output"] + "/" + path.basename(file)
+						}
 
-							Promise.all(moves)
-							.then(()=>{
-								console.log("removing temp directory")
-								temporaryFolder.removeCallback()
-							})
-							.then(resolve,reject)
-
-						// },500)
+						stdout("moving " + file + " to " + outputLocation )
+						return moveFileRetry(file, outputLocation )
 					})
 
+					Promise.all(moves)
+					.then(resolve,reject)
+
 				})
-			}
+
+			})
+			
 
 		})
+		.then(()=>{
+			if ((temporaryFolder)&&(!program.tempfiles)) {
+				console.log("removing temp directory")
+				temporaryFolder.removeCallback()
+			}
+		})
 		.catch((err)=>{
-			if (temporaryFolder) {
+			if ((temporaryFolder)&&(!program.tempfiles)) {
 				console.log("removing temp directory")
 				temporaryFolder.removeCallback()
 			}
