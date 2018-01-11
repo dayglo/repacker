@@ -129,6 +129,7 @@ function loadAndParseFragmentFileSync(filePath) {
 }
 
 
+
 fsp.readFile(repackerfile)
 .then(yaml.safeLoad).catch((e)=>{console.log("could not open the specified Repackerfile: " + e) ; process.exit(1)})
 .then((repackerfile)=>{
@@ -152,6 +153,7 @@ fsp.readFile(repackerfile)
 		}
 
 		var temporaryFolder = null;
+		var outputFolders = [];
 
 		Promise.resolve()
 		.then(()=>{
@@ -305,6 +307,17 @@ fsp.readFile(repackerfile)
 					child.stdout.on('data', stdout);
 					child.stderr.on('data', stderr);
 
+					child.stdout.on('data', (data)=>{
+						var myRegexp = /VM files in directory: (.+?)\n/g;
+						do {
+						    match = myRegexp.exec(data);
+						    if (match) {
+						        outputFolders.push(match[1]);
+						    }
+						} while (match);
+
+					});
+
 					child.on('error', (error)=>{
 						stdout(JSON.stringify(error))
 					});
@@ -335,25 +348,27 @@ fsp.readFile(repackerfile)
 				
 			return new Promise((resolve,reject)=>{
 
-				glob(targetPath + "/output*", {}, function (er, files) {
+				_.forEach(outputFolders, (outputFolder)=>{
+					glob(targetPath + "/" + outputFolder + "/*", {}, function (er, files) {
 
-					if (er) reject(er)
+						if (er) reject(er)
 
-					var moves = files.map((file)=>{
+						var moves = files.map((file)=>{
 
-						var outputLocation = process.cwd() + "/" + path.basename(file)
-						if (options["output"]) {
-							outputLocation = options["output"] + "/" + path.basename(file)
-						}
+							var outputLocation = process.cwd() + "/" + outputFolder;
+							if (options["output"]) {
+								outputLocation = options["output"]
+							}
 
-						stdout("moving " + file + " to " + outputLocation )
-						return moveFileRetry(file, outputLocation )
+							stdout("moving " + file + " to " + outputLocation )
+							return moveFileRetry(file, outputLocation + "/" + path.basename(file))
+						})
+
+						Promise.all(moves)
+						.then(resolve,reject)
+
 					})
-
-					Promise.all(moves)
-					.then(resolve,reject)
-
-				})
+				})	
 
 			})
 			

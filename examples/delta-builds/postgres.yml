@@ -6,8 +6,8 @@ templates:
       provisioners: ansibleprovisioner
     jsonpath:
       builders[?(@.type=='vmware-vmx')].headless: true
-      builders[?(@.type=='vmware-vmx')].source_path: /users/gee/repacker_builds/centos/centos74/centos74.vmx
-      builders[?(@.type=='vmware-vmx')].vm_name: latest
+      builders[?(@.type=='vmware-vmx')].vm_name: postgres
+      builders[?(@.type=='vmware-vmx')].source_path: /users/gee/repacker_builds/centos/centos74.vmx
     output: /users/gee/repacker_builds/postgres/
 fragments:
   vmx-builder: ./vmx-builder.yml
