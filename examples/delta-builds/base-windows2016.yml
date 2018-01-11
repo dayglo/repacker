@@ -1,0 +1,14 @@
+---
+templates:
+  windows_2016.json:
+    repo: https://github.com/dayglo/packer-windows
+    only: vmware-iso
+    jsonpath:
+      builders[?(@.type=='vmware-iso')].boot_wait: 25s
+      builders[?(@.type=='vmware-iso')].headless: false
+      builders[?(@.type=='vmware-iso')].winrm_timeout: 4h
+      builders[?(@.type=='vmware-vmx')].vm_name: windows2016
+    output: /users/gee/repacker_builds/windows2016/
+    # vars:
+    #   vcenter-vm_name: DXC-WIN2016-BASE
+
