@@ -6,6 +6,6 @@ phases:
       - npm install
   build:
     commands:
-      - repacker examples/centos-base.yml -d
-      - repacker examples/postgres.yml -d
+      - repacker examples/delta-builds/base-centos.yml -d
+      - repacker examples/delta-builds/postgres.yml -d
 
